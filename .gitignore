@@ -31,3 +31,8 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Generated files
+R.java
+BuildConfig.java
+proguard/
