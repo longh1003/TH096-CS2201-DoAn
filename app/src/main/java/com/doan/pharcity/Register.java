@@ -61,7 +61,8 @@ public class Register extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 if(!s.toString().equals(current)){
-                    String clean = s.toString().replaceAll("[^\\d]", "");//Xóa các ký tự không phải là số
+                    //Xóa các ký tự không phải là số
+                    String clean = s.toString().replaceAll("[^\\d]", "");
                     String cleanCurrent = current.replaceAll("[^\\d]", "");
 
                     int cl = clean.length();
@@ -85,21 +86,32 @@ public class Register extends AppCompatActivity {
                         // Kiểm tra ngày tháng hợp lệ
                         if (month > 12) month = 12;
                         cal.set(Calendar.MONTH, month - 1);
-                        year = (year < 1900) ? 1900 : (year > cal.get(Calendar.YEAR) ? cal.get(Calendar.YEAR) : year);
+                        year = (year < 1900) ? 1900 : (
+                                year > cal.get(Calendar.YEAR) ?
+                                cal.get(Calendar.YEAR) :
+                                year
+                        );
                         cal.set(Calendar.YEAR, year);
 
-                        day = (day > cal.getActualMaximum(Calendar.DATE)) ? cal.getActualMaximum(Calendar.DATE) : day;
+                        day = (day > cal.getActualMaximum(Calendar.DATE)) ?
+                                cal.getActualMaximum(Calendar.DATE) :
+                                day;
                         clean = String.format("%02d%02d%02d", day, month, year);
                     }
 
-                    clean = String.format("%s/%s/%s", clean.substring(0, 2),
+                    clean = String.format("%s/%s/%s",
+                            clean.substring(0, 2),
                             clean.substring(2, 4),
                             clean.substring(4, 8));
 
                     sel = sel < 0 ? 0 : sel;
                     current = clean;
                     BirthEdit.setText(current);
-                    BirthEdit.setSelection(sel < current.length() ? sel : current.length());
+                    BirthEdit.setSelection(
+                            sel < current.length() ?
+                            sel :
+                            current.length()
+                    );
                 }
             }
         });
@@ -110,7 +122,13 @@ public class Register extends AppCompatActivity {
                 //
                 month += 1;
 
-                @SuppressLint("DefaultLocale") String selectedDate = String.format("%02d/%02d/%04d", dayOfMonth, month, year);
+                @SuppressLint("DefaultLocale") String selectedDate =
+                        String.format(
+                                "%02d/%02d/%04d",
+                                dayOfMonth,
+                                month,
+                                year
+                        );
 
                 BirthEdit.setText(selectedDate);
             }
