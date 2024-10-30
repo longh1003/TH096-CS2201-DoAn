@@ -2,14 +2,18 @@ package com.doan.pharcity;
 
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,7 +25,7 @@ import java.util.Calendar;
 
 public class Register extends AppCompatActivity {
 
-
+    private boolean passWordShow = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,11 +43,65 @@ public class Register extends AppCompatActivity {
         final EditText PasswordEdit = findViewById(R.id.passwordEdit);
         final EditText ConPasswordEdit = findViewById(R.id.conPasswordEdit);
         final EditText BirthEdit = findViewById(R.id.birthEdit);
-        final Button SignUpBnt = findViewById(R.id.signUpBnt);
+        final TextView SignUpBnt = findViewById(R.id.signIpBnt);
         final ImageView IconDateOfBirth = findViewById(R.id.iconDateOfBirth);
+        final RadioButton RadNam = findViewById(R.id.radNam);
+        final RadioButton RadNu = findViewById(R.id.radNu);
+        final ImageView PasswordIcon = findViewById(R.id.passwordIcon);
+        final ImageView ConPasswordIcon = findViewById(R.id.conPasswordIcon);
 
 
-        //Thêm TextWather để định dạng ngày tháng năm khi người dùng nhập
+        //Show conPassWord
+        ConPasswordIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if(passWordShow){
+                    passWordShow = false;
+
+                    ConPasswordEdit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    ConPasswordIcon.setImageResource(R.drawable.password_icon__eye_hide);
+                } else {
+                    passWordShow = true;
+
+                    ConPasswordEdit.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                    ConPasswordIcon.setImageResource(R.drawable.password_icon_password_security_show);
+                }
+                ConPasswordEdit.setSelection(ConPasswordEdit.length());
+            }
+        });
+
+        //Show passWord
+        PasswordIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Checking if password is showing or not
+                if(passWordShow){
+                    passWordShow = false;
+
+                    PasswordEdit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    PasswordIcon.setImageResource(R.drawable.password_icon__eye_hide);
+                } else {
+                    passWordShow = true;
+
+                    PasswordEdit.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                    PasswordIcon.setImageResource(R.drawable.password_icon_password_security_show);
+                }
+                //move the cursor at last of the text
+                PasswordEdit.setSelection(PasswordEdit.length());
+            }
+        });
+
+        //Back to Login
+        SignUpBnt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(Register.this, Login.class));
+            }
+        });
+
+
+        //Add TextWather
         BirthEdit.addTextChangedListener(new TextWatcher() {
             private String current = " ";
             private final String ddmmyyyy = "DDMMYYYY";
@@ -104,6 +162,7 @@ public class Register extends AppCompatActivity {
             }
         });
 
+        //Hiển thị lịch
         DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
