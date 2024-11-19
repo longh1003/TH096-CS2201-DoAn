@@ -19,6 +19,7 @@
         android:textColor="#000000"/>
 
     <TextView
+        android:id="@+id/text_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -115,14 +116,14 @@
         android:id="@+id/signBnt"
         android:layout_width="match_parent"
         android:layout_height="55dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginTop="40dp"
         android:layout_marginStart="20dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/round_back_primary_login"
+        android:onClick="butonSignnUpBnt"
         android:text="Đăng Nhập"
         android:textAllCaps="false"
-        android:background="@drawable/round_back_primary_login"
-        android:textColor="#FFFFFF"
-        />
+        android:textColor="#FFFFFF" />
     
     <RelativeLayout
         android:layout_width="match_parent"
@@ -158,15 +159,15 @@
             android:layout_marginStart="20dp"
             />
     </RelativeLayout>
-    
+
     <RelativeLayout
         android:id="@+id/sigiInBntWithGoogle"
         android:layout_width="match_parent"
         android:layout_height="55dp"
-        android:background="@drawable/round_back_dark_blue"
         android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="20dp"
-        android:layout_marginTop="20dp">
+        android:background="@drawable/round_back_dark_blue">
 
         <ImageView
             android:layout_width="20dp"
@@ -174,7 +175,7 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="20dp"
             android:adjustViewBounds="true"
-            android:src="@drawable/google_logo_logos_icon"/>
+            android:src="@drawable/google_logo_logos_icon" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -182,7 +183,7 @@
             android:layout_centerInParent="true"
             android:text="Đăng nhập với Google"
             android:textColor="#E6000000"
-            android:textStyle="bold"/>
+            android:textStyle="bold" />
     </RelativeLayout>
     
     <LinearLayout
