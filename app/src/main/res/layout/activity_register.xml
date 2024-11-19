@@ -53,6 +53,15 @@
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:layout_marginTop="20dp"/>
+    <TextView
+        android:id="@+id/phoneHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:layout_marginStart="20dp"
+        android:textSize="14sp"
+        android:textColor="#FF0000"
+        android:visibility="gone" />
     <EditText
         android:id="@+id/userEditRegisterEmail"
         android:layout_width="match_parent"
@@ -67,6 +76,15 @@
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:layout_marginTop="20dp"/>
+    <TextView
+        android:id="@+id/emailHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:layout_marginStart="20dp"
+        android:textSize="14sp"
+        android:textColor="#FF0000"
+        android:visibility="gone" />
 
 
     <RelativeLayout
@@ -90,7 +108,6 @@
             android:inputType="textPassword"
             android:maxLines="1"
             />
-
         <ImageView
             android:id="@+id/passwordIcon"
             android:layout_width="40dp"
@@ -102,6 +119,38 @@
             android:adjustViewBounds="true"
             android:layout_marginEnd="20dp"/>
     </RelativeLayout>
+    <LinearLayout
+        android:id="@+id/passwordHintsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:visibility="gone"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/hint_length"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ít nhất 8 ký tự"
+            android:textColor="#FF0000" />
+
+        <TextView
+            android:id="@+id/hint_uppercase"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chứa ít nhất một chữ cái viết hoa"
+            android:textColor="#FF0000" />
+
+        <TextView
+            android:id="@+id/hint_special"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chứa ít nhất một ký tự đặc biệt (!@#$%^*)"
+            android:textColor="#FF0000" />
+    </LinearLayout>
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="55dp"
@@ -112,17 +161,17 @@
 
         <EditText
             android:id="@+id/conPasswordEdit"
-            android:layout_toStartOf="@+id/conPasswordIcon"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginEnd="-1dp"
+            android:layout_toStartOf="@+id/conPasswordIcon"
             android:background="@android:color/transparent"
             android:hint="Nhập lại mật khẩu"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:textSize="16sp"
             android:inputType="textPassword"
             android:maxLines="1"
-            />
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:textSize="16sp" />
 
         <ImageView
             android:id="@+id/conPasswordIcon"
@@ -135,6 +184,15 @@
             android:adjustViewBounds="true"
             android:layout_marginEnd="20dp"/>
     </RelativeLayout>
+    <TextView
+        android:id="@+id/passwordMatchHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:layout_marginStart="20dp"
+        android:textSize="14sp"
+        android:textColor="#FF0000"
+        android:visibility="gone" />
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="55dp"
@@ -169,6 +227,30 @@
             android:layout_marginEnd="20dp"/>
     </RelativeLayout>
 
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp">
+        <RadioGroup
+            android:id="@+id/radGGrpGoiTinh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <RadioButton
+                android:id="@+id/radNam"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nam"
+                android:checked="true"/>
+
+            <RadioButton
+                android:id="@+id/radNu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nữ"/>
+        </RadioGroup>
+    </RelativeLayout>
 
 
     <androidx.appcompat.widget.AppCompatButton

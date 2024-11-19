@@ -19,26 +19,12 @@
         android:textColor="#000000"/>
 
     <TextView
+        android:id="@+id/text_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="@string/text_login"
         android:layout_marginTop="5dp"/>
-
-    <EditText
-        android:id="@+id/userEd"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:background="@drawable/round_back_dark_blue"
-        android:hint="@string/login_number"
-        android:maxLines="1"
-        android:inputType="number"
-        android:textSize="16sp"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginTop="40dp"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -48,13 +34,55 @@
         android:layout_marginTop="20dp"
         android:background="@drawable/round_back_dark_blue">
 
+        <ImageView
+            android:id="@+id/iconPhone"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerInParent="true"
+            android:src="@drawable/phone_icon"
+            android:padding="10dp"/>
+        <EditText
+            android:id="@+id/userEd"
+            android:layout_toRightOf="@+id/iconPhone"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="@string/login_number"
+            android:maxLines="1"
+            android:inputType="number"
+            android:textSize="16sp"
+
+            android:paddingEnd="20dp"
+            android:background="@android:color/transparent"
+            />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/round_back_dark_blue">
+
+        <ImageView
+            android:id="@+id/passWord"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerInParent="true"
+            android:src="@drawable/password_icon"
+            android:padding="10dp"/>
+
         <EditText
             android:id="@+id/passwordEdit"
+            android:layout_toLeftOf="@+id/passwordIcon"
+            android:layout_toRightOf="@+id/passWord"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@android:color/transparent"
             android:hint="Mật khẩu"
-            android:paddingStart="20dp"
             android:paddingEnd="20dp"
             android:textSize="16sp"
             android:inputType="textPassword"
@@ -88,14 +116,14 @@
         android:id="@+id/signBnt"
         android:layout_width="match_parent"
         android:layout_height="55dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginTop="40dp"
         android:layout_marginStart="20dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/round_back_primary_login"
+        android:onClick="butonSignnUpBnt"
         android:text="Đăng Nhập"
         android:textAllCaps="false"
-        android:background="@drawable/round_back_primary_login"
-        android:textColor="#FFFFFF"
-        />
+        android:textColor="#FFFFFF" />
     
     <RelativeLayout
         android:layout_width="match_parent"
@@ -131,15 +159,15 @@
             android:layout_marginStart="20dp"
             />
     </RelativeLayout>
-    
+
     <RelativeLayout
         android:id="@+id/sigiInBntWithGoogle"
         android:layout_width="match_parent"
         android:layout_height="55dp"
-        android:background="@drawable/round_back_dark_blue"
         android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="20dp"
-        android:layout_marginTop="20dp">
+        android:background="@drawable/round_back_dark_blue">
 
         <ImageView
             android:layout_width="20dp"
@@ -147,7 +175,7 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="20dp"
             android:adjustViewBounds="true"
-            android:src="@drawable/google_logo_logos_icon"/>
+            android:src="@drawable/google_logo_logos_icon" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -155,7 +183,7 @@
             android:layout_centerInParent="true"
             android:text="Đăng nhập với Google"
             android:textColor="#E6000000"
-            android:textStyle="bold"/>
+            android:textStyle="bold" />
     </RelativeLayout>
     
     <LinearLayout
