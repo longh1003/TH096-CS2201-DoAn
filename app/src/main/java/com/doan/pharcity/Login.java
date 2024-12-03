@@ -1,21 +1,27 @@
 package com.doan.pharcity;
 
+import static androidx.appcompat.app.AlertDialog.*;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import android.content.Intent;
 import android.content.IntentSender;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -27,14 +33,22 @@ import com.google.android.gms.auth.api.identity.Identity;
 import com.google.android.gms.auth.api.identity.SignInClient;
 import com.google.android.gms.auth.api.identity.SignInCredential;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCanceledListener;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class Login extends AppCompatActivity {
     private SignInClient oneTapClient;
+    private FirebaseAuth auth;
     private BeginSignInRequest signInRequest;
     private static final int REQ_ONE_TAP = 100;
-    private TextView Text_View;
+    TextView ForgotPassword;
+
+
+
 
 
     private boolean passwordShowing = false;
@@ -51,11 +65,13 @@ public class Login extends AppCompatActivity {
         final EditText UserEd = findViewById(R.id.userEd);
         final EditText PasswordEd = findViewById(R.id.passwordEdit);
         final ImageView PasswordIcon = findViewById(R.id.passwordIcon);
-        final TextView ForgotPassword = findViewById(R.id.forgotPassword);
+
         final TextView SignnUpBnt = findViewById(R.id.signnUpBnt);
         final RelativeLayout SigiInBntWithGoogle = findViewById(R.id.sigiInBntWithGoogle);
-         Text_View = findViewById(R.id.text_text);
 
+        ForgotPassword = findViewById(R.id.forgotPassword);
+
+        auth  = FirebaseAuth.getInstance();
 
         oneTapClient = Identity.getSignInClient(this);
         signInRequest = BeginSignInRequest.builder()
@@ -79,10 +95,51 @@ public class Login extends AppCompatActivity {
 
 
 
-        //intern forgotPassword
+        //Dialog forgotPassword
         ForgotPassword.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {startActivity(new Intent(Login.this, forgotPassword.class));}
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
+                View dialogview = getLayoutInflater().inflate(R.layout.dialog_forgot, null);
+
+                EditText emailBox = dialogview.findViewById(R.id.emailBox);
+
+                builder.setView(dialogview);
+                AlertDialog dialog = builder.create();
+
+                dialogview.findViewById(R.id.bntReset).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String userEmail = emailBox.getText().toString();
+
+                        if(TextUtils.isEmpty(userEmail) && !Patterns.EMAIL_ADDRESS.matcher(userEmail).matches()){
+                            Toast.makeText(Login.this,"Enter", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        auth.sendPasswordResetEmail(userEmail).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if(task.isSuccessful()) {
+                                    Toast.makeText(Login.this, "Check", Toast.LENGTH_SHORT).show();
+                                    dialog.dismiss();
+                                } else {
+                                    Toast.makeText(Login.this, "Untables", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    }
+                });
+                dialogview.findViewById(R.id.bntCancel).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+                if(dialog.getWindow() != null) {
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+                }
+                dialog.show();
+            }
         });
 
 
@@ -141,38 +198,6 @@ public class Login extends AppCompatActivity {
                         Log.d(TAG, e.getLocalizedMessage());
                     }
                 });
-    }
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        switch (requestCode) {
-            case REQ_ONE_TAP:
-                try {
-                    SignInCredential credential = oneTapClient.getSignInCredentialFromIntent(data);
-                    String idToken = credential.getGoogleIdToken();
-                    String username = credential.getId();
-                    String password = credential.getPassword();
-
-                    Text_View.setText("Authencation " + username);
-
-                    if (idToken !=  null) {
-                        // Got an ID token from Google. Use it to authenticate
-                        // with your backend.
-                        Log.d(TAG, "Got ID token.");
-                    } else if (password != null) {
-                        // Got a saved username and password. Use them to authenticate
-                        // with your backend.
-                        Log.d(TAG, "Got password.");
-                    }
-                } catch (ApiException e) {
-                    Text_View.setText(e.toString());
-                    // ...
-                }
-                break;
-        }
     }
 
 
