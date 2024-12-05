@@ -15,17 +15,29 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+
+
 import java.util.Calendar;
+import java.util.Objects;
 
 public class Register extends AppCompatActivity {
 
+    private FirebaseAuth auth;
+    public Button SignUpBnt;
     private LinearLayout PasswordHintsLayout;
     private EditText PasswordEdit;
     private EditText UserEditRegisterEmail;
@@ -46,13 +58,14 @@ public class Register extends AppCompatActivity {
             return insets;
         });
 
+        auth = FirebaseAuth.getInstance();
+        SignUpBnt = findViewById(R.id.signUpBnt);
         final EditText UserEditRegisterFullName = findViewById(R.id.userEditRegisterFullName);
         final EditText UserEditRegisterPhone = findViewById(R.id.userEditRegisterPhone);
         UserEditRegisterEmail = findViewById(R.id.userEditRegisterEmail);
         PasswordEdit = findViewById(R.id.passwordEdit);
         ConPasswordEdit = findViewById(R.id.conPasswordEdit);
         final EditText BirthEdit = findViewById(R.id.birthEdit);
-        final TextView SignUpBnt = findViewById(R.id.signIpBnt);
         final ImageView IconDateOfBirth = findViewById(R.id.iconDateOfBirth);
         final RadioButton RadNam = findViewById(R.id.radNam);
         final RadioButton RadNu = findViewById(R.id.radNu);
@@ -65,6 +78,41 @@ public class Register extends AppCompatActivity {
         PasswordMatchHint = findViewById(R.id.passwordMatchHint);
         EmailHint = findViewById(R.id.emailHint);
         PhoneHint = findViewById(R.id.phoneHint);
+
+
+//        //Onclick BntSignUp
+        SignUpBnt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String userEmail = UserEditRegisterEmail.getText().toString().trim();
+                String passWord = PasswordEdit.getText().toString().trim();
+
+
+                if(userEmail.isEmpty()) {
+                    UserEditRegisterEmail.setError("Không được để trống Email");
+                }
+                if(passWord.isEmpty()){
+                    PasswordEdit.setError("Vui lòng điền mật  khẩu");
+                } else {
+                    auth.createUserWithEmailAndPassword(userEmail, passWord).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if(task.isSuccessful()) {
+                                Toast.makeText(Register.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(Register.this, Login.class));
+                            } else {
+                                Toast.makeText(Register.this, "Đăng ký không thành công" + Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+
+
+
+
 
         PhoneHint.setOnFocusChangeListener((v , hashFocus) -> {
             if (hashFocus) {
@@ -214,19 +262,18 @@ public class Register extends AppCompatActivity {
 
         //
 
-        //Back to Login
-        SignUpBnt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Register.this, Login.class));
-            }
-        });
+//        //Back to Login
+//        SignUpBnt.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                startActivity(new Intent(Register.this, Login.class));
+//            }
+//        });
 
 
         //Add TextWather
         BirthEdit.addTextChangedListener(new TextWatcher() {
             private String current = " ";
-            private final String ddmmyyyy = "DDMMYYYY";
             private final Calendar cal = Calendar.getInstance();
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -238,6 +285,7 @@ public class Register extends AppCompatActivity {
 
             }
 
+            @SuppressLint("DefaultLocale")
             @Override
             public void afterTextChanged(Editable s) {
                 if(!s.toString().equals(current)){
@@ -255,6 +303,7 @@ public class Register extends AppCompatActivity {
                     if (clean.equals(cleanCurrent)) sel--;
 
                     if (clean.length() < 8) {
+                        String ddmmyyyy = "DDMMYYYY";
                         clean = clean + ddmmyyyy.substring(clean.length());
                     } else {
                         // Định dạng ngày
@@ -265,10 +314,10 @@ public class Register extends AppCompatActivity {
                         // Kiểm tra ngày tháng hợp lệ
                         if (month > 12) month = 12;
                         cal.set(Calendar.MONTH, month - 1);
-                        year = (year < 1900) ? 1900 : (year > cal.get(Calendar.YEAR) ? cal.get(Calendar.YEAR) : year);
+                        year = (year < 1900) ? 1900 : (Math.min(year, cal.get(Calendar.YEAR)));
                         cal.set(Calendar.YEAR, year);
 
-                        day = (day > cal.getActualMaximum(Calendar.DATE)) ? cal.getActualMaximum(Calendar.DATE) : day;
+                        day = Math.min(day, cal.getActualMaximum(Calendar.DATE));
                         clean = String.format("%02d%02d%02d", day, month, year);
                     }
 
@@ -276,10 +325,10 @@ public class Register extends AppCompatActivity {
                             clean.substring(2, 4),
                             clean.substring(4, 8));
 
-                    sel = sel < 0 ? 0 : sel;
+                    sel = Math.max(sel, 0);
                     current = clean;
                     BirthEdit.setText(current);
-                    BirthEdit.setSelection(sel < current.length() ? sel : current.length());
+                    BirthEdit.setSelection(Math.min(sel, current.length()));
                 }
             }
         });
@@ -295,7 +344,7 @@ public class Register extends AppCompatActivity {
 
                 BirthEdit.setText(selectedDate);
             }
-        }, 2024,01,01);
+        }, 2024, 1, 1);
 
         IconDateOfBirth.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -307,6 +356,7 @@ public class Register extends AppCompatActivity {
     }
 
     //Check phone
+    @SuppressLint("SetTextI18n")
     private void validatePhoneOne(String phone) {
         String phoneRegex = "^(03|05|07|08|09)[0-9]{8}$";
 
@@ -323,6 +373,7 @@ public class Register extends AppCompatActivity {
     }
 
     //check Email
+    @SuppressLint("SetTextI18n")
     private void validateEmailOnce(String email) {
         String gmailRegex = "^[a-zA-Z0-9._%+-]+@gmail\\.com$";
             if (email.isEmpty()) {
@@ -338,6 +389,7 @@ public class Register extends AppCompatActivity {
             }
     }
 
+    @SuppressLint("SetTextI18n")
     private void checkPasswordMatch() {
         String password = PasswordEdit.getText().toString();
         String confirmPassword = ConPasswordEdit.getText().toString();
@@ -378,4 +430,19 @@ public class Register extends AppCompatActivity {
         }
     }
 
+    public boolean isEmailValid() {
+        return isEmailValid;
+    }
+
+    public void setEmailValid(boolean emailValid) {
+        isEmailValid = emailValid;
+    }
+
+    public boolean isPhoneValid() {
+        return isPhoneValid;
+    }
+
+    public void setPhoneValid(boolean phoneValid) {
+        isPhoneValid = phoneValid;
+    }
 }

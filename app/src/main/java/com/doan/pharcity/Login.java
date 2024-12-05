@@ -1,6 +1,6 @@
 package com.doan.pharcity;
 
-import static androidx.appcompat.app.AlertDialog.*;
+
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import android.content.Intent;
@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -20,7 +21,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -31,23 +32,27 @@ import com.google.android.gms.auth.api.identity.BeginSignInRequest;
 import com.google.android.gms.auth.api.identity.BeginSignInResult;
 import com.google.android.gms.auth.api.identity.Identity;
 import com.google.android.gms.auth.api.identity.SignInClient;
-import com.google.android.gms.auth.api.identity.SignInCredential;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCanceledListener;
+
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class Login extends AppCompatActivity {
+
+    private static final int RC_SIGN_IN = 1001;
+    private GoogleSignInClient mGoogleSignInClientl;
     private SignInClient oneTapClient;
+    private Button SignBnt;
+    private EditText UserLoginEmail;
     private FirebaseAuth auth;
     private BeginSignInRequest signInRequest;
     private static final int REQ_ONE_TAP = 100;
     TextView ForgotPassword;
-
-
 
 
 
@@ -62,16 +67,55 @@ public class Login extends AppCompatActivity {
                 v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        final EditText UserEd = findViewById(R.id.userEd);
         final EditText PasswordEd = findViewById(R.id.passwordEdit);
         final ImageView PasswordIcon = findViewById(R.id.passwordIcon);
 
         final TextView SignnUpBnt = findViewById(R.id.signnUpBnt);
         final RelativeLayout SigiInBntWithGoogle = findViewById(R.id.sigiInBntWithGoogle);
-
+        SignBnt = findViewById(R.id.signBnt);
         ForgotPassword = findViewById(R.id.forgotPassword);
+        UserLoginEmail = findViewById(R.id.userLoginEmail);
 
         auth  = FirebaseAuth.getInstance();
+
+
+//        //Setting google signin
+//        GoogleSignInOptions sgo = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//                .requestIdToken(getString(R.string.google_app_id)).build()
+
+        //Onlcik Loginbnt
+        SignBnt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String email = UserLoginEmail.getText().toString();
+                String pass = PasswordEd.getText().toString();
+
+                if (!email.isEmpty() && Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    if(!pass.isEmpty()) {
+                        auth.signInWithEmailAndPassword(email, pass)
+                                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                            @Override
+                            public void onSuccess(AuthResult authResult) {
+                                Toast.makeText(Login.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(Login.this, MainActivity.class));
+                                finish();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(Login.this, "Đăng nhập không thành công!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else {
+                        PasswordEd.setError("Sai mật khẩu!");
+                    }
+                } else if (email.isEmpty()) {
+                    UserLoginEmail.setError("Khong được để trống");
+                } else {
+                    UserLoginEmail.setError("Vui lòng nhập đúng địa chỉ email!");
+                }
+            }
+        });
 
         oneTapClient = Identity.getSignInClient(this);
         signInRequest = BeginSignInRequest.builder()
@@ -120,10 +164,10 @@ public class Login extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 if(task.isSuccessful()) {
-                                    Toast.makeText(Login.this, "Check", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Login.this, "Đã gỡi mã OTP", Toast.LENGTH_SHORT).show();
                                     dialog.dismiss();
                                 } else {
-                                    Toast.makeText(Login.this, "Untables", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Login.this, "Sai địa chỉ Email", Toast.LENGTH_SHORT).show();
                                 }
                             }
                         });
