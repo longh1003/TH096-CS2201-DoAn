@@ -43,13 +43,13 @@
             android:src="@drawable/phone_icon"
             android:padding="10dp"/>
         <EditText
-            android:id="@+id/userLoginEmail"
+            android:id="@+id/userLoginPhone"
             android:layout_toRightOf="@+id/iconPhone"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:hint="@string/login_number"
             android:maxLines="1"
-            android:inputType="textEmailAddress"
+            android:inputType="number"
             android:textSize="16sp"
 
             android:paddingEnd="20dp"

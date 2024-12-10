@@ -3,8 +3,10 @@ package com.doan.pharcity;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.InputType;
@@ -44,19 +46,23 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class Login extends AppCompatActivity {
 
+    SQLiteHelper sqLiteHelper;
     private static final int RC_SIGN_IN = 1001;
     private GoogleSignInClient mGoogleSignInClientl;
     private SignInClient oneTapClient;
     private Button SignBnt;
-    private EditText UserLoginEmail;
+    private EditText UserLoginPhone;
     private FirebaseAuth auth;
     private BeginSignInRequest signInRequest;
     private static final int REQ_ONE_TAP = 100;
     TextView ForgotPassword;
+    private long backPressedTime;
+    private Toast backToast;
 
 
 
     private boolean passwordShowing = false;
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,7 +80,11 @@ public class Login extends AppCompatActivity {
         final RelativeLayout SigiInBntWithGoogle = findViewById(R.id.sigiInBntWithGoogle);
         SignBnt = findViewById(R.id.signBnt);
         ForgotPassword = findViewById(R.id.forgotPassword);
-        UserLoginEmail = findViewById(R.id.userLoginEmail);
+        UserLoginPhone = findViewById(R.id.userLoginPhone);
+
+        sqLiteHelper = new SQLiteHelper(this);
+        SQLiteDatabase db = sqLiteHelper.getWritableDatabase();
+        
 
         auth  = FirebaseAuth.getInstance();
 
@@ -87,32 +97,38 @@ public class Login extends AppCompatActivity {
         SignBnt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String email = UserLoginEmail.getText().toString();
+                String phone = UserLoginPhone.getText().toString();
+                String email = sqLiteHelper.getEmailByPhone(phone);
                 String pass = PasswordEd.getText().toString();
 
-                if (!email.isEmpty() && Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                    if(!pass.isEmpty()) {
-                        auth.signInWithEmailAndPassword(email, pass)
-                                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                            @Override
-                            public void onSuccess(AuthResult authResult) {
-                                Toast.makeText(Login.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(Login.this, MainActivity.class));
-                                finish();
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(Login.this, "Đăng nhập không thành công!", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                if(sqLiteHelper.isPhoneExist(phone)) {
+                    if (Patterns.EMAIL_ADDRESS.matcher(email)
+                            .matches()) {
+                        if (!pass.isEmpty()) {
+                            auth.signInWithEmailAndPassword(email, pass)
+                                    .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                                        @Override
+                                        public void onSuccess(AuthResult authResult) {
+                                            Toast.makeText(Login.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                                            startActivity(new Intent(Login.this, MainActivity.class));
+                                            finish();
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Toast.makeText(Login.this, "Sai mật khẩu hoặc SĐT!", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        } else {
+                            PasswordEd.setError("Sai mật khẩu!");
+                        }
+                    } else if (phone.isEmpty()) {
+                        UserLoginPhone.setError("Không được để trống");
                     } else {
-                        PasswordEd.setError("Sai mật khẩu!");
+                        UserLoginPhone.setError("Vui lòng nhập đúng SĐT đã đăng ký!");
                     }
-                } else if (email.isEmpty()) {
-                    UserLoginEmail.setError("Khong được để trống");
-                } else {
-                    UserLoginEmail.setError("Vui lòng nhập đúng địa chỉ email!");
+                }else{
+                    UserLoginPhone.setError("Số điện thoại chưa được đăng ký!");
                 }
             }
         });
@@ -187,6 +203,7 @@ public class Login extends AppCompatActivity {
         });
 
 
+
         //Show password
         PasswordIcon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -216,6 +233,22 @@ public class Login extends AppCompatActivity {
                 startActivity(new Intent(Login.this, Register.class));
             }
         });
+    }
+
+    @Override
+    public void onBackPressed(){
+
+        if(backPressedTime + 2000 > System.currentTimeMillis()){
+            if(backToast != null){
+                backToast.cancel();
+            }
+            super.onBackPressed();
+            return;
+        } else {
+            backToast = Toast.makeText(getBaseContext(), "Nhấn lần nữa để thoát", Toast.LENGTH_SHORT);
+            backToast.show();
+        }
+        backPressedTime = System.currentTimeMillis();
     }
 
 
