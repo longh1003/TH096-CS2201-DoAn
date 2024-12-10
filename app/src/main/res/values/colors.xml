@@ -17,4 +17,6 @@
     <color name="primary_text">#212121</color>
     <color name="error_color">#D32F2F</color>
     <color name="lavender">#4E74CA</color>
+    <color name="yellow">#FFEB3B</color>
+    <color name="text_color_wellcome">#1FC57A</color>
 </resources>

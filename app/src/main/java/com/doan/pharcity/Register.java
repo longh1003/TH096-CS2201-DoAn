@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -36,6 +37,8 @@ import java.util.Objects;
 
 public class Register extends AppCompatActivity {
 
+
+    private SQLiteHelper sqLiteHelperl;
     private FirebaseAuth auth;
     public Button SignUpBnt;
     private LinearLayout PasswordHintsLayout;
@@ -45,7 +48,8 @@ public class Register extends AppCompatActivity {
     private boolean passWordShow = false;
     private boolean isEmailValid = false;
     private boolean isPhoneValid = false;
-    private TextView HintLength, HintUppercase, HintSpecial, PasswordMatchHint, EmailHint, PhoneHint;
+    private TextView HintLength, HintUppercase, HintSpecial, PasswordMatchHint,
+            EmailHint, PhoneHint, SingInTxt;
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +61,8 @@ public class Register extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        sqLiteHelperl = new SQLiteHelper(this);
 
         auth = FirebaseAuth.getInstance();
         SignUpBnt = findViewById(R.id.signUpBnt);
@@ -78,28 +84,60 @@ public class Register extends AppCompatActivity {
         PasswordMatchHint = findViewById(R.id.passwordMatchHint);
         EmailHint = findViewById(R.id.emailHint);
         PhoneHint = findViewById(R.id.phoneHint);
+        SingInTxt = findViewById(R.id.signIpText);
 
 
 //        //Onclick BntSignUp
         SignUpBnt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                String userName = UserEditRegisterFullName.getText().toString().trim();
+                String userPhone = UserEditRegisterPhone.getText().toString().trim();
+                String userBirth = BirthEdit.getText().toString().trim();
+                String userGender = RadNam.isChecked() ? "Nam" : "Nữ";
                 String userEmail = UserEditRegisterEmail.getText().toString().trim();
                 String passWord = PasswordEdit.getText().toString().trim();
 
 
+                if(userName.isEmpty()) {
+                    UserEditRegisterFullName.setError("Không được để trống tên");
+                }
+                if(userPhone.isEmpty()) {
+                    UserEditRegisterPhone.setError("Không được để trống số điện thoại");
+                }
+                if(userBirth.isEmpty()) {
+                    BirthEdit.setError("Không được để trống ngày sinh");
+                }
                 if(userEmail.isEmpty()) {
                     UserEditRegisterEmail.setError("Không được để trống Email");
+                    UserEditRegisterEmail.requestFocus();
+                    return;
                 }
                 if(passWord.isEmpty()){
                     PasswordEdit.setError("Vui lòng điền mật  khẩu");
+                    PasswordEdit.requestFocus();
+                    return;
+                }
+                if (sqLiteHelperl.isEmailExist(userEmail)) {
+                    Toast.makeText(Register.this, "Email đã tồn tại", Toast.LENGTH_SHORT).show();
+                }
+                if (sqLiteHelperl.isPhoneExist(userPhone)) {
+                    Toast.makeText(Register.this, "Số điện thoại đã tồn tại", Toast.LENGTH_SHORT).show();
                 } else {
                     auth.createUserWithEmailAndPassword(userEmail, passWord).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if(task.isSuccessful()) {
+                                sqLiteHelperl.addNewCustomer( userName, userEmail, userPhone, userBirth, userGender);
                                 Toast.makeText(Register.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(Register.this, Login.class));
+
+                                new Handler().postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        startActivity(new Intent(Register.this, Login.class));
+                                        finish();
+                                    }
+                                }, 3000);
                             } else {
                                 Toast.makeText(Register.this, "Đăng ký không thành công" + Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
                             }
@@ -262,14 +300,6 @@ public class Register extends AppCompatActivity {
 
         //
 
-//        //Back to Login
-//        SignUpBnt.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                startActivity(new Intent(Register.this, Login.class));
-//            }
-//        });
-
 
         //Add TextWather
         BirthEdit.addTextChangedListener(new TextWatcher() {
@@ -321,7 +351,7 @@ public class Register extends AppCompatActivity {
 
                         day = Math.min(day, cal.getActualMaximum(Calendar.DATE));
 
-                        year = (year < 1900) ? 1900 
+                        year = (year < 1900) ? 1900 : year;
 
                         clean = String.format("%02d%02d%02d", day, month, year);
                     }
@@ -340,6 +370,16 @@ public class Register extends AppCompatActivity {
                    
 
                 }
+            }
+        });
+
+        SingInTxt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Register.this, Login.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                finish();
             }
         });
 
