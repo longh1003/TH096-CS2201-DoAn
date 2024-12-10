@@ -13,6 +13,7 @@ import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -62,7 +63,7 @@ public class Login extends AppCompatActivity {
 
 
     private boolean passwordShowing = false;
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint({"MissingInflatedId", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,16 +78,39 @@ public class Login extends AppCompatActivity {
         final ImageView PasswordIcon = findViewById(R.id.passwordIcon);
 
         final TextView SignnUpBnt = findViewById(R.id.signnUpBnt);
-        final RelativeLayout SigiInBntWithGoogle = findViewById(R.id.sigiInBntWithGoogle);
+//        final RelativeLayout SigiInBntWithGoogle = findViewById(R.id.sigiInBntWithGoogle);
         SignBnt = findViewById(R.id.signBnt);
         ForgotPassword = findViewById(R.id.forgotPassword);
         UserLoginPhone = findViewById(R.id.userLoginPhone);
 
         sqLiteHelper = new SQLiteHelper(this);
         SQLiteDatabase db = sqLiteHelper.getWritableDatabase();
-        
 
         auth  = FirebaseAuth.getInstance();
+
+        final boolean[] isPassworVisible = {false};
+
+        //Setup Onclik eyeshowpas
+        PasswordEd.setOnTouchListener((v, event) -> {
+            if(event.getAction() == MotionEvent.ACTION_UP) {
+                if(event.getRawX() >= (PasswordEd.getRight() - PasswordEd.getCompoundDrawables()[2].getBounds().width())) {
+                    if(isPassworVisible[0]){
+                        PasswordEd.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        PasswordEd.setCompoundDrawablesWithIntrinsicBounds(R.drawable.password_icon, 0, R.drawable.hidepass, 0);
+                    } else {
+                        PasswordEd.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                        PasswordEd.setCompoundDrawablesWithIntrinsicBounds(R.drawable.password_icon, 0, R.drawable.showpass, 0);
+                    }
+                    PasswordEd.setSelection(PasswordEd.getText().length());
+                    isPassworVisible[0] = !isPassworVisible[0];
+                    return true;
+                }
+            }
+            return false;
+        });
+        
+
+
 
 
 //        //Setting google signin
@@ -102,28 +126,26 @@ public class Login extends AppCompatActivity {
                 String pass = PasswordEd.getText().toString();
 
                 if(sqLiteHelper.isPhoneExist(phone)) {
-                    if (Patterns.EMAIL_ADDRESS.matcher(email)
-                            .matches()) {
-                        if (!pass.isEmpty()) {
-                            auth.signInWithEmailAndPassword(email, pass)
-                                    .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                                        @Override
-                                        public void onSuccess(AuthResult authResult) {
-                                            Toast.makeText(Login.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-                                            startActivity(new Intent(Login.this, MainActivity.class));
-                                            finish();
-                                        }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            Toast.makeText(Login.this, "Sai mật khẩu hoặc SĐT!", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                        } else {
-                            PasswordEd.setError("Sai mật khẩu!");
-                        }
-                    } else if (phone.isEmpty()) {
-                        UserLoginPhone.setError("Không được để trống");
+                        if (Patterns.EMAIL_ADDRESS.matcher(email)
+                                .matches()) {
+                            if (!pass.isEmpty()) {
+                                auth.signInWithEmailAndPassword(email, pass)
+                                        .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                                            @Override
+                                            public void onSuccess(AuthResult authResult) {
+                                                Toast.makeText(Login.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                                                startActivity(new Intent(Login.this, MainActivity.class));
+                                                finish();
+                                            }
+                                        }).addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(Login.this, "Sai mật khẩu hoặc SĐT!", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            } else {
+                                PasswordEd.setError("Vui lòng nhập mật khẩu!");
+                            }
                     } else {
                         UserLoginPhone.setError("Vui lòng nhập đúng SĐT đã đăng ký!");
                     }
@@ -203,28 +225,6 @@ public class Login extends AppCompatActivity {
         });
 
 
-
-        //Show password
-        PasswordIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                //Checking if password is showing or not
-                if(passwordShowing){
-                    passwordShowing = false;
-
-                    PasswordEd.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                    PasswordIcon.setImageResource(R.drawable.password_icon__eye_hide);
-                } else {
-                    passwordShowing = true;
-
-                    PasswordEd.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                    PasswordIcon.setImageResource(R.drawable.password_icon_password_security_show);
-                }
-                //move the cursor at last of the text
-                PasswordEd.setSelection(PasswordEd.length());
-            }
-        });
 
 
         SignnUpBnt.setOnClickListener(new View.OnClickListener() {
