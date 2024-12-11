@@ -11,6 +11,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.MotionEvent;
@@ -75,17 +76,12 @@ public class Login extends AppCompatActivity {
             return insets;
         });
         final EditText PasswordEd = findViewById(R.id.passwordEdit);
-        final ImageView PasswordIcon = findViewById(R.id.passwordIcon);
-
         final TextView SignnUpBnt = findViewById(R.id.signnUpBnt);
-//        final RelativeLayout SigiInBntWithGoogle = findViewById(R.id.sigiInBntWithGoogle);
         SignBnt = findViewById(R.id.signBnt);
         ForgotPassword = findViewById(R.id.forgotPassword);
         UserLoginPhone = findViewById(R.id.userLoginPhone);
-
         sqLiteHelper = new SQLiteHelper(this);
         SQLiteDatabase db = sqLiteHelper.getWritableDatabase();
-
         auth  = FirebaseAuth.getInstance();
 
         final boolean[] isPassworVisible = {false};
@@ -94,15 +90,22 @@ public class Login extends AppCompatActivity {
         PasswordEd.setOnTouchListener((v, event) -> {
             if(event.getAction() == MotionEvent.ACTION_UP) {
                 if(event.getRawX() >= (PasswordEd.getRight() - PasswordEd.getCompoundDrawables()[2].getBounds().width())) {
-                    if(isPassworVisible[0]){
-                        PasswordEd.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                        PasswordEd.setCompoundDrawablesWithIntrinsicBounds(R.drawable.password_icon, 0, R.drawable.hidepass, 0);
+                    if (!PasswordEd.getText().toString().isEmpty()) {
+                        if (isPassworVisible[0]) {
+//                            PasswordEd.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                            PasswordEd.setTransformationMethod(new PasswordTransformationMethod());
+                            PasswordEd.setCompoundDrawablesWithIntrinsicBounds(R.drawable.password_icon, 0, R.drawable.hidepass, 0);
+                        } else {
+//                            PasswordEd.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                            PasswordEd.setTransformationMethod(null);
+                            PasswordEd.setCompoundDrawablesWithIntrinsicBounds(R.drawable.password_icon, 0, R.drawable.showpass, 0);
+                        }
+                        PasswordEd.setSelection(PasswordEd.getText().length());
+                        isPassworVisible[0] = !isPassworVisible[0];
                     } else {
-                        PasswordEd.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                        PasswordEd.setCompoundDrawablesWithIntrinsicBounds(R.drawable.password_icon, 0, R.drawable.showpass, 0);
+                        Toast.makeText(Login.this, "Vui lòng nhập mật khẩu!", Toast.LENGTH_SHORT).show();
                     }
-                    PasswordEd.setSelection(PasswordEd.getText().length());
-                    isPassworVisible[0] = !isPassworVisible[0];
+
                     return true;
                 }
             }
@@ -111,46 +114,69 @@ public class Login extends AppCompatActivity {
         
 
 
-
-
-//        //Setting google signin
-//        GoogleSignInOptions sgo = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-//                .requestIdToken(getString(R.string.google_app_id)).build()
-
         //Onlcik Loginbnt
         SignBnt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String phone = UserLoginPhone.getText().toString();
-                String email = sqLiteHelper.getEmailByPhone(phone);
+                String phoneOrEmail = UserLoginPhone.getText().toString();
                 String pass = PasswordEd.getText().toString();
 
-                if(sqLiteHelper.isPhoneExist(phone)) {
-                        if (Patterns.EMAIL_ADDRESS.matcher(email)
-                                .matches()) {
-                            if (!pass.isEmpty()) {
-                                auth.signInWithEmailAndPassword(email, pass)
-                                        .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                                            @Override
-                                            public void onSuccess(AuthResult authResult) {
-                                                Toast.makeText(Login.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-                                                startActivity(new Intent(Login.this, MainActivity.class));
-                                                finish();
-                                            }
-                                        }).addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                Toast.makeText(Login.this, "Sai mật khẩu hoặc SĐT!", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                            } else {
-                                PasswordEd.setError("Vui lòng nhập mật khẩu!");
-                            }
+
+                if (Patterns.PHONE.matcher(phoneOrEmail).matches()) {  // Nếu người dùng nhập số điện thoại
+                    if (sqLiteHelper.isPhoneExist(phoneOrEmail)) {  // Kiểm tra số điện thoại có tồn tại không
+                        String email = sqLiteHelper.getEmailByPhone(phoneOrEmail);  // Lấy email tương ứng với số điện thoại
+
+                        // Tiến hành đăng nhập với email và mật khẩu
+                        if (!pass.isEmpty()) {
+                            auth.signInWithEmailAndPassword(email, pass)
+                                    .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                                        @Override
+                                        public void onSuccess(AuthResult authResult) {
+                                            Toast.makeText(Login.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                                            startActivity(new Intent(Login.this, MainActivity.class));
+                                            finish();
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Toast.makeText(Login.this, "Sai mật khẩu hoặc SĐT!", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        } else {
+                            PasswordEd.setError("Vui lòng nhập mật khẩu!");
+                        }
                     } else {
-                        UserLoginPhone.setError("Vui lòng nhập đúng SĐT đã đăng ký!");
+                        UserLoginPhone.setError("Số điện thoại chưa được đăng ký!");
                     }
-                }else{
-                    UserLoginPhone.setError("Số điện thoại chưa được đăng ký!");
+                } else if (Patterns.EMAIL_ADDRESS.matcher(phoneOrEmail).matches()) {  // Nếu người dùng nhập email
+                    // Kiểm tra email có tồn tại trong hệ thống hay không (tìm theo email)
+                    if (sqLiteHelper.isEmailExist(phoneOrEmail)) {
+                        // Tiến hành đăng nhập với email và mật khẩu
+                        if (!pass.isEmpty()) {
+                            auth.signInWithEmailAndPassword(phoneOrEmail, pass)
+                                    .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                                        @Override
+                                        public void onSuccess(AuthResult authResult) {
+                                            Toast.makeText(Login.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                                            startActivity(new Intent(Login.this, MainActivity.class));
+                                            finish();
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Toast.makeText(Login.this, "Sai mật khẩu hoặc email!", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        } else {
+                            PasswordEd.setError("Vui lòng nhập mật khẩu!");
+                        }
+                    } else {
+                        UserLoginPhone.setError("Email chưa được đăng ký!");
+                    }
+                } else {
+                    UserLoginPhone.setError("Vui lòng nhập đúng số điện thoại hoặc email!");
                 }
             }
         });
@@ -277,8 +303,4 @@ public class Login extends AppCompatActivity {
                 });
     }
 
-
-    void navigateToSecondActivity(){
-        Intent intent = new Intent(Login.this , SecondActivity.class);
-    }
 }
