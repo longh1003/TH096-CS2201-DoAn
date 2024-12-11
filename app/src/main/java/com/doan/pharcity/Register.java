@@ -8,7 +8,12 @@ import android.os.Handler;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.text.method.PasswordTransformationMethod;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -49,7 +54,7 @@ public class Register extends AppCompatActivity {
     private boolean isEmailValid = false;
     private boolean isPhoneValid = false;
     private TextView HintLength, HintUppercase, HintSpecial, PasswordMatchHint,
-            EmailHint, PhoneHint, SingInTxt;
+            EmailHint, PhoneHint, SingInTxt, ToastText;
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,24 +72,38 @@ public class Register extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         SignUpBnt = findViewById(R.id.signUpBnt);
         final EditText UserEditRegisterFullName = findViewById(R.id.userEditRegisterFullName);
-        final EditText UserEditRegisterPhone = findViewById(R.id.userEditRegisterPhone);
         UserEditRegisterEmail = findViewById(R.id.userEditRegisterEmail);
         PasswordEdit = findViewById(R.id.passwordEdit);
-        ConPasswordEdit = findViewById(R.id.conPasswordEdit);
-        final EditText BirthEdit = findViewById(R.id.birthEdit);
-        final ImageView IconDateOfBirth = findViewById(R.id.iconDateOfBirth);
-        final RadioButton RadNam = findViewById(R.id.radNam);
-        final RadioButton RadNu = findViewById(R.id.radNu);
-        final ImageView PasswordIcon = findViewById(R.id.passwordIcon);
-        final ImageView ConPasswordIcon = findViewById(R.id.conPasswordIcon);
-        HintLength = findViewById(R.id.hint_length);
-        HintSpecial = findViewById(R.id.hint_special);
-        HintUppercase = findViewById(R.id.hint_uppercase);
-        PasswordHintsLayout = findViewById(R.id.passwordHintsLayout);
-        PasswordMatchHint = findViewById(R.id.passwordMatchHint);
-        EmailHint = findViewById(R.id.emailHint);
-        PhoneHint = findViewById(R.id.phoneHint);
         SingInTxt = findViewById(R.id.signIpText);
+        final boolean[] isPassworEditVisible = {false};
+        ToastText = findViewById(R.id.toast_message);
+
+
+        //Setup Onclik eyeshowpas
+        PasswordEdit.setOnTouchListener((v, event) -> {
+            if(event.getAction() == MotionEvent.ACTION_UP) {
+                if(event.getRawX() >= (PasswordEdit.getRight() - PasswordEdit.getCompoundDrawables()[2].getBounds().width())) {
+                    if (!PasswordEdit.getText().toString().isEmpty()) {
+                        if (isPassworEditVisible[0]) {
+//                            PasswordEd.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                            PasswordEdit.setTransformationMethod(new PasswordTransformationMethod());
+                            PasswordEdit.setCompoundDrawablesWithIntrinsicBounds(R.drawable.password_icon, 0, R.drawable.hidepass, 0);
+                        } else {
+//                            PasswordEd.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                            PasswordEdit.setTransformationMethod(null);
+                            PasswordEdit.setCompoundDrawablesWithIntrinsicBounds(R.drawable.password_icon, 0, R.drawable.showpass, 0);
+                        }
+                        PasswordEdit.setSelection(PasswordEdit.getText().length());
+                        isPassworEditVisible[0] = !isPassworEditVisible[0];
+                    } else {
+                        Toast.makeText(Register.this, "Vui lòng nhập mật khẩu!", Toast.LENGTH_SHORT).show();
+                    }
+
+                    return true;
+                }
+            }
+            return false;
+        });
 
 
 //        //Onclick BntSignUp
@@ -92,21 +111,12 @@ public class Register extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String userName = UserEditRegisterFullName.getText().toString().trim();
-                String userPhone = UserEditRegisterPhone.getText().toString().trim();
-                String userBirth = BirthEdit.getText().toString().trim();
-                String userGender = RadNam.isChecked() ? "Nam" : "Nữ";
                 String userEmail = UserEditRegisterEmail.getText().toString().trim();
                 String passWord = PasswordEdit.getText().toString().trim();
 
 
                 if(userName.isEmpty()) {
                     UserEditRegisterFullName.setError("Không được để trống tên");
-                }
-                if(userPhone.isEmpty()) {
-                    UserEditRegisterPhone.setError("Không được để trống số điện thoại");
-                }
-                if(userBirth.isEmpty()) {
-                    BirthEdit.setError("Không được để trống ngày sinh");
                 }
                 if(userEmail.isEmpty()) {
                     UserEditRegisterEmail.setError("Không được để trống Email");
@@ -121,14 +131,12 @@ public class Register extends AppCompatActivity {
                 if (sqLiteHelperl.isEmailExist(userEmail)) {
                     Toast.makeText(Register.this, "Email đã tồn tại", Toast.LENGTH_SHORT).show();
                 }
-                if (sqLiteHelperl.isPhoneExist(userPhone)) {
-                    Toast.makeText(Register.this, "Số điện thoại đã tồn tại", Toast.LENGTH_SHORT).show();
-                } else {
+               else {
                     auth.createUserWithEmailAndPassword(userEmail, passWord).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if(task.isSuccessful()) {
-                                sqLiteHelperl.addNewCustomer( userName, userEmail, userPhone, userBirth, userGender);
+                                sqLiteHelperl.addNewCustomer( userName, userEmail,null, null, null);
                                 Toast.makeText(Register.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
 
                                 new Handler().postDelayed(new Runnable() {
@@ -139,7 +147,9 @@ public class Register extends AppCompatActivity {
                                     }
                                 }, 3000);
                             } else {
-                                Toast.makeText(Register.this, "Đăng ký không thành công" + Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
+                                String errorMessage = Objects.requireNonNull(task.getException()).getMessage();
+                                String localizedMessage = translateFirebaseErrorToVietnamese(errorMessage);
+                                Toast.makeText(Register.this, "Đăng ký không thành công: " + localizedMessage, Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
@@ -148,96 +158,6 @@ public class Register extends AppCompatActivity {
         });
 
 
-
-
-
-
-        PhoneHint.setOnFocusChangeListener((v , hashFocus) -> {
-            if (hashFocus) {
-                PhoneHint.setVisibility(View.VISIBLE);
-            } else {
-                PhoneHint.setVisibility(View.GONE);
-            }
-        });
-
-        UserEditRegisterPhone.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                validatePhoneOne(s.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-
-        UserEditRegisterEmail.setOnFocusChangeListener((v , hashFocus) -> {
-            if (hashFocus) {
-                EmailHint.setVisibility(View.VISIBLE);
-            } else {
-                EmailHint.setVisibility(View.GONE);
-            }
-        });
-
-        //Email input content
-        UserEditRegisterEmail.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                validateEmailOnce(s.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-
-        //Check conform password
-        ConPasswordEdit.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                checkPasswordMatch();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-
-        ConPasswordEdit.setOnFocusChangeListener((v, hashFoCus) -> {
-            if(hashFoCus) {
-                PasswordMatchHint.setVisibility(View.VISIBLE);
-            } else {
-                PasswordMatchHint.setVisibility(View.GONE);
-            }
-        });
-
-        PasswordEdit.setOnFocusChangeListener((v,hasFocus) -> {
-            if(hasFocus) {
-                PasswordHintsLayout.setVisibility(View.VISIBLE);
-            } else {
-                PasswordHintsLayout.setVisibility(View.GONE);
-            }
-        });
-
-        //Check passWord
         PasswordEdit.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -246,7 +166,8 @@ public class Register extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                updatePasswordHints(s.toString());
+
+                showPasswordHint(s.toString());
             }
 
             @Override
@@ -255,123 +176,12 @@ public class Register extends AppCompatActivity {
             }
         });
 
-
-        //Show conPassWord
-        ConPasswordIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if(passWordShow){
-                    passWordShow = false;
-
-                    ConPasswordEdit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                    ConPasswordIcon.setImageResource(R.drawable.password_icon__eye_hide);
-                } else {
-                    passWordShow = true;
-
-                    ConPasswordEdit.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                    ConPasswordIcon.setImageResource(R.drawable.password_icon_password_security_show);
-                }
-                ConPasswordEdit.setSelection(ConPasswordEdit.length());
+        UserEditRegisterEmail.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                validateEmailOnce(UserEditRegisterEmail.getText().toString().trim());
             }
         });
 
-        //Show passWord
-        PasswordIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Checking if password is showing or not
-                if(passWordShow){
-                    passWordShow = false;
-
-                    PasswordEdit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                    PasswordIcon.setImageResource(R.drawable.password_icon__eye_hide);
-                } else {
-                    passWordShow = true;
-
-                    PasswordEdit.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                    PasswordIcon.setImageResource(R.drawable.password_icon_password_security_show);
-                }
-                //move the cursor at last of the text
-                PasswordEdit.setSelection(PasswordEdit.length());
-            }
-        });
-
-
-        //
-
-
-        //Add TextWather
-        BirthEdit.addTextChangedListener(new TextWatcher() {
-            private String current = " ";
-            private final Calendar cal = Calendar.getInstance();
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @SuppressLint("DefaultLocale")
-            @Override
-            public void afterTextChanged(Editable s) {
-                if(!s.toString().equals(current)){
-                    //Xóa các ký tự không phải là số
-                    String clean = s.toString().replaceAll("[^\\d]", "");
-                    String cleanCurrent = current.replaceAll("[^\\d]", "");
-
-                    int cl = clean.length();
-                    int sel = cl;
-                    for (int i = 2; i <= cl && i < 6; i+= 2){
-                        sel++;
-                    }
-
-
-                    // Sửa lỗi khi người dùng xóa ký tự
-                    if (clean.equals(cleanCurrent)) sel--;
-
-                    if (clean.length() < 8) {
-                        String ddmmyyyy = "DDMMYYYY";
-                        clean = clean + ddmmyyyy.substring(clean.length());
-                    } else {
-                        // Định dạng ngày
-                        int day = Integer.parseInt(clean.substring(0, 2));
-                        int month = Integer.parseInt(clean.substring(2, 4));
-                        int year = Integer.parseInt(clean.substring(4, 8));
-
-                        // Kiểm tra ngày tháng hợp lệ
-                        if (month > 12) month = 12;
-                        cal.set(Calendar.MONTH, month - 1);
-
-                        year = (year < 1900) ? 1900 : (Math.min(year, cal.get(Calendar.YEAR)));
-                        cal.set(Calendar.YEAR, year);
-
-                        day = Math.min(day, cal.getActualMaximum(Calendar.DATE));
-
-                        year = (year < 1900) ? 1900 : year;
-
-                        clean = String.format("%02d%02d%02d", day, month, year);
-                    }
-
-                    clean = String.format("%s/%s/%s",
-                            clean.substring(0, 2),
-                            clean.substring(2, 4),
-                            clean.substring(4, 8));
-
-                    sel = Math.max(sel, 0);
-                    current = clean;
-                    BirthEdit.setText(current);
-
-                    BirthEdit.setSelection(Math.min(sel, current.length()));
-
-                   
-
-                }
-            }
-        });
 
         SingInTxt.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -384,107 +194,149 @@ public class Register extends AppCompatActivity {
         });
 
         //Hiển thị lịch
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                //
-                month += 1;
-
-                @SuppressLint("DefaultLocale") String selectedDate =
-                        String.format(
-                                "%02d/%02d/%04d",
-                                dayOfMonth,
-                                month,
-                                year
-                        );
-
-                BirthEdit.setText(selectedDate);
-            }
-        }, 2024, 1, 1);
-
-        IconDateOfBirth.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                datePickerDialog.show();
-            }
-        });
-
-    }
-
-    //Check phone
-    @SuppressLint("SetTextI18n")
-    private void validatePhoneOne(String phone) {
-        String phoneRegex = "^(03|05|07|08|09)[0-9]{8}$";
-
-            if (phone.isEmpty()) {
-                PhoneHint.setVisibility(View.GONE); // Ẩn thông báo nếu chưa nhập gì
-            } else if (phone.matches(phoneRegex)) {
-                PhoneHint.setVisibility(View.GONE); // Hiện thông báo hợp lệ
-            } else {
-                PhoneHint.setText("Số điện thoại không hợp lệ");
-                PhoneHint.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-                PhoneHint.setVisibility(View.VISIBLE); // Hiện thông báo không hợp lệ
-            }
+//        DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+//            @Override
+//            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+//                //
+//                month += 1;
+//
+//                @SuppressLint("DefaultLocale") String selectedDate =
+//                        String.format(
+//                                "%02d/%02d/%04d",
+//                                dayOfMonth,
+//                                month,
+//                                year
+//                        );
+//
+//                BirthEdit.setText(selectedDate);
+//            }
+//        }, 2024, 1, 1);
+//
+//        IconDateOfBirth.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                datePickerDialog.show();
+//            }
+//        });
 
     }
 
-    //check Email
-    @SuppressLint("SetTextI18n")
+    private void showPasswordHint(String password) {
+        // Kiểm tra các yếu tố mật khẩu và hiển thị gợi ý qua Toast
+
+            showToast("Mật khẩu phải có ít nhất 8 ký tự\n"
+                   +"Mật khẩu cần có ít nhất 1 chữ cái viết hoa\n"
+                    +"Mật khẩu cần có ít nhất 1 ký tự đặc biệt");
+    }
+
+
+    private void showToast(String message) {
+        // Tạo layout cho custom Toast
+        LayoutInflater inflater = getLayoutInflater();
+        View layout = inflater.inflate(R.layout.custom_toast, (ViewGroup) findViewById(R.id.toast_layout_root));
+
+        // Tạo TextView trong custom Toast
+        TextView text = layout.findViewById(R.id.toast_message);
+        text.setText(message);
+
+        // Tạo Toast với layout custom
+        Toast toast = new Toast(getApplicationContext());
+        toast.setDuration(Toast.LENGTH_SHORT); // Thời gian hiển thị Toast
+        toast.setView(layout);
+
+        // Đặt vị trí Toast ở đầu màn hình
+        toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 200); // Y=200 sẽ đẩy lên trên một chút
+        toast.show();
+    }
+
+    private String translateFirebaseErrorToVietnamese(String errorMessage) {
+        if (errorMessage.contains("email address is already in use")) {
+            return "Email đã được sử dụng.";
+        } else if (errorMessage.contains("invalid email")) {
+            return "Email không hợp lệ.";
+        } else if (errorMessage.contains("weak password")) {
+            return "Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn.";
+        } else if (errorMessage.contains("network error")) {
+            return "Lỗi mạng. Vui lòng kiểm tra kết nối Internet.";
+        } else if (errorMessage.contains("The email address is badly formatted")) {
+            return "Định dạng email không hợp lệ.";
+        } else if (errorMessage.contains("Password should be at least 6 characters")) {
+            return "Mật khẩu phải có ít nhất 6 ký tự.";
+        }
+        // Thêm các lỗi khác nếu cần
+        return "Lỗi không xác định. Vui lòng thử lại.";
+    }
+
+//    //Check phone
+//    @SuppressLint("SetTextI18n")
+//    private void validatePhoneOne(String phone) {
+//        String phoneRegex = "^(03|05|07|08|09)[0-9]{8}$";
+//
+//            if (phone.isEmpty()) {
+//                PhoneHint.setVisibility(View.GONE); // Ẩn thông báo nếu chưa nhập gì
+//            } else if (phone.matches(phoneRegex)) {
+//                PhoneHint.setVisibility(View.GONE); // Hiện thông báo hợp lệ
+//            } else {
+//                PhoneHint.setText("Số điện thoại không hợp lệ");
+//                PhoneHint.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+//                PhoneHint.setVisibility(View.VISIBLE); // Hiện thông báo không hợp lệ
+//            }
+//
+//    }
+
+//    //check Email
     private void validateEmailOnce(String email) {
-        String gmailRegex = "^[a-zA-Z0-9._%+-]+@gmail\\.com$";
-            if (email.isEmpty()) {
-                EmailHint.setVisibility(View.GONE);
-            } else if (email.matches(gmailRegex)) {
-                EmailHint.setText("Email hợp lệ.");
-                EmailHint.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
-                EmailHint.setVisibility(View.VISIBLE);
+        String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+
+        if (email.isEmpty()) {
+               UserEditRegisterEmail.setError(null);
+            } else if (!email.matches(emailRegex)) {
+                UserEditRegisterEmail.setError("Email không hợp lệ");
             } else {
-                EmailHint.setText("Email không đúng định dạng.");
-                EmailHint.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-                EmailHint.setVisibility(View.VISIBLE);
+                UserEditRegisterEmail.setError(null);
             }
     }
 
-    @SuppressLint("SetTextI18n")
-    private void checkPasswordMatch() {
-        String password = PasswordEdit.getText().toString();
-        String confirmPassword = ConPasswordEdit.getText().toString();
+//    @SuppressLint("SetTextI18n")
+//    private void checkPasswordMatch() {
+//        String password = PasswordEdit.getText().toString();
+//        String confirmPassword = ConPasswordEdit.getText().toString();
+//
+//        if(confirmPassword.isEmpty()) {
+//            PasswordMatchHint.setVisibility(View.GONE);
+//        } else if (password.equals(confirmPassword)) {
+//            PasswordMatchHint.setText("Mật khẩu trùng khớp.");
+//            PasswordMatchHint.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+//            PasswordMatchHint.setVisibility(View.VISIBLE);
+//        } else {
+//            PasswordMatchHint.setText("Mật khẩu không trùng khớp.");
+//            PasswordMatchHint.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+//            PasswordMatchHint.setVisibility(View.VISIBLE);
+//        }
+//    }
 
-        if(confirmPassword.isEmpty()) {
-            PasswordMatchHint.setVisibility(View.GONE);
-        } else if (password.equals(confirmPassword)) {
-            PasswordMatchHint.setText("Mật khẩu trùng khớp.");
-            PasswordMatchHint.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
-            PasswordMatchHint.setVisibility(View.VISIBLE);
-        } else {
-            PasswordMatchHint.setText("Mật khẩu không trùng khớp.");
-            PasswordMatchHint.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-            PasswordMatchHint.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void updatePasswordHints(String password) {
-        // Kiểm tra độ dài mật khẩu
-        if (password.length() >= 8) {
-            HintLength.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
-        } else {
-            HintLength.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-        }
-
-        // Kiểm tra chữ cái viết hoa
-        if (password.matches(".*[A-Z].*")) {
-            HintUppercase.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
-        } else {
-            HintUppercase.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-        }
-
-        // Kiểm tra ký tự đặc biệt
-        if (password.matches(".*[!@#$%^&*+=?-].*")) {
-            HintSpecial.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
-        } else {
-            HintSpecial.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-        }
-    }
+//    private void updatePasswordHints(String password) {
+//        // Kiểm tra độ dài mật khẩu
+//        if (password.length() >= 8) {
+//            HintLength.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+//        } else {
+//            HintLength.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+//        }
+//
+//        // Kiểm tra chữ cái viết hoa
+//        if (password.matches(".*[A-Z].*")) {
+//            HintUppercase.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+//        } else {
+//            HintUppercase.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+//        }
+//
+//        // Kiểm tra ký tự đặc biệt
+//        if (password.matches(".*[!@#$%^&*+=?-].*")) {
+//            HintSpecial.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+//        } else {
+//            HintSpecial.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+//        }
+//    }
 
     public boolean isEmailValid() {
         return isEmailValid;
