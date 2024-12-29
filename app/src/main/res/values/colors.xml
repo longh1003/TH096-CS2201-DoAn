@@ -19,4 +19,9 @@
     <color name="lavender">#4E74CA</color>
     <color name="yellow">#FFEB3B</color>
     <color name="text_color_wellcome">#1FC57A</color>
+    <color name="colormain">#1FC57A</color>
+    <color name="light_grey">#DED8D8</color>
+    <color name="secondary">#3F51B5</color>
+    <color name="error">#FF0000</color>
+    <color name="gray">#808080</color>"
 </resources>

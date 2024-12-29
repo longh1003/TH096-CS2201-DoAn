@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:id="@+id/menu_tad_1" android:title="Tab 1" android:icon="@drawable/icons8_home_500"/>
-    <item android:id="@+id/menu_tad_2" android:title="Tab 2" android:icon="@drawable/icons8_home_500"/>
-    <item android:id="@+id/menu_tad_3" android:title="Tab 3" android:icon="@drawable/icons8_home_500"/>
-    <item android:id="@+id/menu_tad_4" android:title="Tab 4" android:icon="@drawable/icons8_home_500"/>
+    <item  android:id="@+id/homeFragment"
+        android:title="Tang Chủ"
+        android:icon="@drawable/icons8_home_500"/>
+    <item android:id="@+id/shoping_cartFragment"
+        android:title="Giỏ Hàng"
+        android:icon="@drawable/_025885_shopping_cart_icon"/>
+    <item android:id="@+id/accountFragment"
+        android:title="Tài Khoản"
+        android:icon="@drawable/profile_icon"/>
 
 </menu>

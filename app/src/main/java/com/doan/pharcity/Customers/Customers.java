@@ -11,7 +11,7 @@ public class Customers implements Serializable {
     private String email;
     private String gender;
     private String dateOfBirth;
-
+    private String address;
 
     public Customers() {
         this.id = id;
@@ -20,6 +20,16 @@ public class Customers implements Serializable {
         this.email = email;
         this.gender = gender;
         this.dateOfBirth = dateOfBirth;
+        this.address = address;
+
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public String getDateOfBirth() {return dateOfBirth;}
@@ -50,6 +60,6 @@ public class Customers implements Serializable {
     @NonNull
     @Override
     public String toString() {
-        return name + " - " + phone + " - " + email + " - " + gender + " - " + dateOfBirth;
+        return name + " - " + phone + " - " + email + " - " + gender + " - " + dateOfBirth + " - " + address;
     }
 }

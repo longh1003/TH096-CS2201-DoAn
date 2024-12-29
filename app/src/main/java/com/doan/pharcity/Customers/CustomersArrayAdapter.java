@@ -15,7 +15,7 @@ public class CustomersArrayAdapter {
     //Connect to SQLite
     private final SQLiteHelper dbHelper;
     private SQLiteDatabase db;
-    private final String[] allColumns = {SQLiteHelper.ID_COL, SQLiteHelper.Name_COL, SQLiteHelper.Email_COL, SQLiteHelper.Phone_COL, SQLiteHelper.Birth_COL, SQLiteHelper.Gender_COL};
+    private final String[] allColumns = {SQLiteHelper.ID_COL, SQLiteHelper.Name_COL, SQLiteHelper.Email_COL, SQLiteHelper.Phone_COL, SQLiteHelper.Birth_COL, SQLiteHelper.Gender_COL, SQLiteHelper.Address_COL};
 
     CustomersArrayAdapter(Context context) {dbHelper = new SQLiteHelper(context);}
 
@@ -49,6 +49,7 @@ public class CustomersArrayAdapter {
         customers.setPhone(cursor.getString(3));
         customers.setDateOfBirth(cursor.getString(4));
         customers.setGender(cursor.getString(5));
+        customers.setAddress(cursor.getString(6));
         return customers;
     }
 
