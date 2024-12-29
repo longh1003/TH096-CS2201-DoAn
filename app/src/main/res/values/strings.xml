@@ -7,4 +7,14 @@
     <string name="login_number">Số điện thoại</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="search">Tìm kiếm tên thuốc.</string>
+    <string name="categories">Thuốc mới nhất</string>
+    <string name="see_all">Xem tất cả</string>
+    <string name="best_sell_product">Sản phẩm bán chạy</string>
+    <string name="exploer">Khám phá</string>
+    <string name="home_main">Trang chủ</string>
+    <string name="support">Hỗ trợ</string>
+    <string name="shopping">Giỏ hàng</string>
+    <string name="profile">Tài khoản</string>
+
 </resources>

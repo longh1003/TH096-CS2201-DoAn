@@ -4,12 +4,13 @@ package com.doan.pharcity;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
@@ -18,8 +19,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,13 +31,14 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.doan.pharcity.Activity.MainActivity;
+import com.doan.pharcity.Customers.nameCustomers;
 import com.google.android.gms.auth.api.identity.BeginSignInRequest;
 import com.google.android.gms.auth.api.identity.BeginSignInResult;
 import com.google.android.gms.auth.api.identity.Identity;
 import com.google.android.gms.auth.api.identity.SignInClient;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -92,7 +92,7 @@ public class Login extends AppCompatActivity {
                 if(event.getRawX() >= (PasswordEd.getRight() - PasswordEd.getCompoundDrawables()[2].getBounds().width())) {
                     if (!PasswordEd.getText().toString().isEmpty()) {
                         if (isPassworVisible[0]) {
-//                            PasswordEd.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
                             PasswordEd.setTransformationMethod(new PasswordTransformationMethod());
                             PasswordEd.setCompoundDrawablesWithIntrinsicBounds(R.drawable.password_icon, 0, R.drawable.hidepass, 0);
                         } else {
@@ -125,13 +125,15 @@ public class Login extends AppCompatActivity {
                 if (Patterns.PHONE.matcher(phoneOrEmail).matches()) {  // Nếu người dùng nhập số điện thoại
                     if (sqLiteHelper.isPhoneExist(phoneOrEmail)) {  // Kiểm tra số điện thoại có tồn tại không
                         String email = sqLiteHelper.getEmailByPhone(phoneOrEmail);  // Lấy email tương ứng với số điện thoại
-
+                        String name = sqLiteHelper.getNameByPhone(phoneOrEmail);
+                        String id = sqLiteHelper.getIdByPhoneCus(phoneOrEmail);
                         // Tiến hành đăng nhập với email và mật khẩu
                         if (!pass.isEmpty()) {
                             auth.signInWithEmailAndPassword(email, pass)
                                     .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                                         @Override
                                         public void onSuccess(AuthResult authResult) {
+                                            saveLoginState(Login.this, true,name, email, id);
                                             Toast.makeText(Login.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                                             startActivity(new Intent(Login.this, MainActivity.class));
                                             finish();
@@ -152,12 +154,15 @@ public class Login extends AppCompatActivity {
                 } else if (Patterns.EMAIL_ADDRESS.matcher(phoneOrEmail).matches()) {  // Nếu người dùng nhập email
                     // Kiểm tra email có tồn tại trong hệ thống hay không (tìm theo email)
                     if (sqLiteHelper.isEmailExist(phoneOrEmail)) {
+                        String name = sqLiteHelper.getNameByEmail(phoneOrEmail);
+                        String id = sqLiteHelper.getIdByEmailCus(phoneOrEmail);
                         // Tiến hành đăng nhập với email và mật khẩu
                         if (!pass.isEmpty()) {
                             auth.signInWithEmailAndPassword(phoneOrEmail, pass)
                                     .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                                         @Override
                                         public void onSuccess(AuthResult authResult) {
+                                            saveLoginState(Login.this, true,name,phoneOrEmail, id);
                                             Toast.makeText(Login.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                                             startActivity(new Intent(Login.this, MainActivity.class));
                                             finish();
@@ -196,12 +201,6 @@ public class Login extends AppCompatActivity {
                 // Automatically sign in when exactly one credential is retrieved.
                 .setAutoSelectEnabled(true)
                 .build();
-        // ...
-
-
-
-
-
 
         //Dialog forgotPassword
         ForgotPassword.setOnClickListener(new View.OnClickListener() {
@@ -249,9 +248,6 @@ public class Login extends AppCompatActivity {
                 dialog.show();
             }
         });
-
-
-
 
         SignnUpBnt.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -302,5 +298,17 @@ public class Login extends AppCompatActivity {
                     }
                 });
     }
+
+   private void saveLoginState(Context context, boolean isUserLogin,String name, String email, String id) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("isUserLogin", isUserLogin);
+        editor.putString("username", name);
+        editor.putString("email", email);
+        editor.putString("id", id);
+        editor.apply();
+
+    }
+
 
 }

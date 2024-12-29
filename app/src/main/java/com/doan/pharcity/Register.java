@@ -76,7 +76,7 @@ public class Register extends AppCompatActivity {
         PasswordEdit = findViewById(R.id.passwordEdit);
         SingInTxt = findViewById(R.id.signIpText);
         final boolean[] isPassworEditVisible = {false};
-        ToastText = findViewById(R.id.toast_message);
+//   ToastText = findViewById(R.id.toast_message);
 
 
         //Setup Onclik eyeshowpas
@@ -136,7 +136,8 @@ public class Register extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if(task.isSuccessful()) {
-                                sqLiteHelperl.addNewCustomer( userName, userEmail,null, null, null);
+
+                                sqLiteHelperl.addNewCustomer( userName, userEmail,null, null, null, null);
                                 Toast.makeText(Register.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
 
                                 new Handler().postDelayed(new Runnable() {
@@ -167,7 +168,7 @@ public class Register extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
-                showPasswordHint(s.toString());
+//                showPasswordHint(s.toString());
             }
 
             @Override
@@ -193,60 +194,8 @@ public class Register extends AppCompatActivity {
             }
         });
 
-        //Hiển thị lịch
-//        DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-//            @Override
-//            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-//                //
-//                month += 1;
-//
-//                @SuppressLint("DefaultLocale") String selectedDate =
-//                        String.format(
-//                                "%02d/%02d/%04d",
-//                                dayOfMonth,
-//                                month,
-//                                year
-//                        );
-//
-//                BirthEdit.setText(selectedDate);
-//            }
-//        }, 2024, 1, 1);
-//
-//        IconDateOfBirth.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                datePickerDialog.show();
-//            }
-//        });
-
-    }
-
-    private void showPasswordHint(String password) {
-        // Kiểm tra các yếu tố mật khẩu và hiển thị gợi ý qua Toast
-
-            showToast("Mật khẩu phải có ít nhất 8 ký tự\n"
-                   +"Mật khẩu cần có ít nhất 1 chữ cái viết hoa\n"
-                    +"Mật khẩu cần có ít nhất 1 ký tự đặc biệt");
-    }
 
 
-    private void showToast(String message) {
-        // Tạo layout cho custom Toast
-        LayoutInflater inflater = getLayoutInflater();
-        View layout = inflater.inflate(R.layout.custom_toast, (ViewGroup) findViewById(R.id.toast_layout_root));
-
-        // Tạo TextView trong custom Toast
-        TextView text = layout.findViewById(R.id.toast_message);
-        text.setText(message);
-
-        // Tạo Toast với layout custom
-        Toast toast = new Toast(getApplicationContext());
-        toast.setDuration(Toast.LENGTH_SHORT); // Thời gian hiển thị Toast
-        toast.setView(layout);
-
-        // Đặt vị trí Toast ở đầu màn hình
-        toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 200); // Y=200 sẽ đẩy lên trên một chút
-        toast.show();
     }
 
     private String translateFirebaseErrorToVietnamese(String errorMessage) {
@@ -267,22 +216,6 @@ public class Register extends AppCompatActivity {
         return "Lỗi không xác định. Vui lòng thử lại.";
     }
 
-//    //Check phone
-//    @SuppressLint("SetTextI18n")
-//    private void validatePhoneOne(String phone) {
-//        String phoneRegex = "^(03|05|07|08|09)[0-9]{8}$";
-//
-//            if (phone.isEmpty()) {
-//                PhoneHint.setVisibility(View.GONE); // Ẩn thông báo nếu chưa nhập gì
-//            } else if (phone.matches(phoneRegex)) {
-//                PhoneHint.setVisibility(View.GONE); // Hiện thông báo hợp lệ
-//            } else {
-//                PhoneHint.setText("Số điện thoại không hợp lệ");
-//                PhoneHint.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-//                PhoneHint.setVisibility(View.VISIBLE); // Hiện thông báo không hợp lệ
-//            }
-//
-//    }
 
 //    //check Email
     private void validateEmailOnce(String email) {
@@ -297,46 +230,6 @@ public class Register extends AppCompatActivity {
             }
     }
 
-//    @SuppressLint("SetTextI18n")
-//    private void checkPasswordMatch() {
-//        String password = PasswordEdit.getText().toString();
-//        String confirmPassword = ConPasswordEdit.getText().toString();
-//
-//        if(confirmPassword.isEmpty()) {
-//            PasswordMatchHint.setVisibility(View.GONE);
-//        } else if (password.equals(confirmPassword)) {
-//            PasswordMatchHint.setText("Mật khẩu trùng khớp.");
-//            PasswordMatchHint.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
-//            PasswordMatchHint.setVisibility(View.VISIBLE);
-//        } else {
-//            PasswordMatchHint.setText("Mật khẩu không trùng khớp.");
-//            PasswordMatchHint.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-//            PasswordMatchHint.setVisibility(View.VISIBLE);
-//        }
-//    }
-
-//    private void updatePasswordHints(String password) {
-//        // Kiểm tra độ dài mật khẩu
-//        if (password.length() >= 8) {
-//            HintLength.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
-//        } else {
-//            HintLength.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-//        }
-//
-//        // Kiểm tra chữ cái viết hoa
-//        if (password.matches(".*[A-Z].*")) {
-//            HintUppercase.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
-//        } else {
-//            HintUppercase.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-//        }
-//
-//        // Kiểm tra ký tự đặc biệt
-//        if (password.matches(".*[!@#$%^&*+=?-].*")) {
-//            HintSpecial.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
-//        } else {
-//            HintSpecial.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-//        }
-//    }
 
     public boolean isEmailValid() {
         return isEmailValid;
